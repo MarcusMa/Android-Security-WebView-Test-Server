@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="http://libs.baidu.com/jquery/1.11.3/jquery.min.js"></script>
+  <script text="text/javascript" src="test1.js"></script>
+  <title>测试Android WebView</title>
+</head>
+<body>
+    <h1>测试Android WebView</h1>
+    <input id="userinput" value="null"/>
+    <h2>测试test1()函数被替换<h2>
+    <button onclick="test1()">test1</button>
+    <h2>测试POST表单提交</h2>
+    <form action='/testPost' method='post'> 
+        <input type='text' name='name' value='John by form'>
+        <input type='submit' value='Submit'> 
+    </form>
+    <h2>测试异步请求Ajax中的POST</h2>
+    <button onclick="ajaxPostTest()" >Ajax Post</button>
+    <h2>测试异步请求Ajax中的GET</h2>
+    <button onclick="ajaxGETTest()">Ajax GET</button>
+    <br>
+    <h3>异步请求返回结果显示：
+    <input id="callBackConsole" value = "null"/>
+</body>
+<script text="text/javascript" >
+$(document).ready(function(){
+    ajaxPostTest = function(){
+        $.post(
+            "/testPost", 
+            { name: "John by post"},
+            function(response){
+                $("#callBackConsole").val(response);
+            } );
+    };
+
+    ajaxGETTest = function(){
+        $.get(
+            "/testGet", 
+            { name: "John by get" },
+            function(response){
+                $("#callBackConsole").val(response);
+            });
+    }; 
+});
+// var oriXOpen = XMLHttpRequest.prototype.open; 
+// var oriXSend = XMLHttpRequest.prototype.send;
+// var RequstData = {};
+// XMLHttpRequest.prototype.send = function(content){
+//     console.log(content);
+//     console.log(RequstData);
+//     if(RequstData['method'].toLowerCase() == 'post'){
+//         RequstData['url'] = "www.baidu.com";
+//     }
+//     oriXOpen.call(this,content);
+// }
+// XMLHttpRequest.prototype.open = function(method,url,asncFlag,user,password) {
+//     //code to trace or intercept
+//     RequstData['method'] = method;
+//     RequstData['url'] = url;
+//     console.log( method + " "+ url);
+//     oriXOpen.call(this,RequstData['method'],RequstData['url'],asncFlag,user,password); 
+// };
+
+</script>
+</html>
