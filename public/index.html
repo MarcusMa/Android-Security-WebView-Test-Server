@@ -1,67 +1,122 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <script src="http://libs.baidu.com/jquery/1.11.3/jquery.min.js"></script>
-  <script text="text/javascript" src="test1.js"></script>
-  <title>测试Android WebView</title>
+    <meta charset="gb2312">
+    <script src="http://libs.baidu.com/jquery/1.11.3/jquery.min.js"></script>
+    <script text="text/javascript" src="test1.js"></script>
+    <title>测试Android WebView</title>
 </head>
+
 <body>
-    <h1>测试Android WebView</h1>
-    <input id="userinput" value="null"/>
-    <h2>测试test1()函数被替换<h2>
+    <h3>测试Android WebView</h3>
+    <h4>测试test1()函数被替换</h4>
+    <input id="userinput" value="null" />
     <button onclick="test1()">test1</button>
-    <h2>测试POST表单提交</h2>
-    <form action='/testPost' method='post'> 
+    <br></br>
+    <h4>测试POST表单提交</h4>
+    <form action='/testPost' method='post'>
         <input type='text' name='name' value='John by form'>
-        <input type='submit' value='Submit'> 
+        <input type='submit' value='表单提交'>
     </form>
-    <h2>测试异步请求Ajax中的POST</h2>
-    <button onclick="ajaxPostTest()" >Ajax Post</button>
-    <h2>测试异步请求Ajax中的GET</h2>
+    <br></br>
+    <h4>测试异步请求Ajax中的POST</h4>
+    <input id="testPost" type='text' name='name' value='John by post'>
+    <button onclick="ajaxPostTest()">Ajax Post</button>
+    <input id="testPostResult" type="text" disabled='true' value="Result" />
+    <br></br>
+    <h4>测试异步请求Ajax中的GET</h4>
+    <input id="testGet" type='text' name='name' value='John by get'>
     <button onclick="ajaxGETTest()">Ajax GET</button>
-    <br>
-    <h3>异步请求返回结果显示：
-    <input id="callBackConsole" value = "null"/>
+    <input id="testGetResult" type="text" disabled='true' value="Result" />
+    <br></br>
 </body>
-<script text="text/javascript" >
-$(document).ready(function(){
-    ajaxPostTest = function(){
-        $.post(
-            "/testPost", 
-            { name: "John by post"},
-            function(response){
-                $("#callBackConsole").val(response);
-            } );
-    };
+<script text="text/javascript">
+    $(document).ready(function() {
+        ajaxPostTest = function() {
+            var value = $("#testPost").val();
+            $.post(
+                "/testPost", {
+                    name: value,
+                    age: 10,
+                    phone: '3333333',
+                    other: '我是中文'
+                },
+                function(response) {
+                    $("#testPostResult").val(response.msg);
+                },
+                "json"
+            );
+        };
 
-    ajaxGETTest = function(){
-        $.get(
-            "/testGet", 
-            { name: "John by get" },
-            function(response){
-                $("#callBackConsole").val(response);
+        ajaxGETTest = function() {
+            var value = $("#textGet").val();
+            $.get(
+                "/testGet", {
+                    name: value,
+                    age: 32,
+                    phone: '18918275949',
+                    other: '我也是中文'
+                },
+                function(response) {
+                    $("#testGetResult").val(response);
+                });
+        };
+    });
+
+    HTMLFormElement.prototype._submit = HTMLFormElement.prototype.submit;
+    HTMLFormElement.prototype.submit = interceptor;
+
+    window.addEventListener('submit', function(e) {
+        interceptor(e);
+    }, true);
+
+    function interceptor(e) {
+        var frm = e ? e.target : this;
+
+        interceptor_onsubmit(frm);
+        frm._submit();
+    }
+
+    function interceptor_onsubmit(f) {
+        var jsonArr = [];
+        for (i = 0; i < f.elements.length; i++) {
+            var parName = f.elements[i].name;
+            var parValue = f.elements[i].value;
+            var parType = f.elements[i].type;
+
+            jsonArr.push({
+                name: parName,
+                value: parValue,
+                type: parType
             });
-    }; 
-});
-// var oriXOpen = XMLHttpRequest.prototype.open; 
-// var oriXSend = XMLHttpRequest.prototype.send;
-// var RequstData = {};
-// XMLHttpRequest.prototype.send = function(content){
-//     console.log(content);
-//     console.log(RequstData);
-//     if(RequstData['method'].toLowerCase() == 'post'){
-//         RequstData['url'] = "www.baidu.com";
-//     }
-//     oriXOpen.call(this,content);
-// }
-// XMLHttpRequest.prototype.open = function(method,url,asncFlag,user,password) {
-//     //code to trace or intercept
-//     RequstData['method'] = method;
-//     RequstData['url'] = url;
-//     console.log( method + " "+ url);
-//     oriXOpen.call(this,RequstData['method'],RequstData['url'],asncFlag,user,password); 
-// };
+        }
+        /* js interception */
+        // interception.customSubmit(JSON.stringify(jsonArr),  
+        //         f.attributes['method'] === undefined ? null  
+        //                 : f.attributes['method'].nodeValue,  
+        //         f.attributes['enctype'] === undefined ? null  
+        //                 : f.attributes['enctype'].nodeValue);  
+    }
 
+    /* for ajax request */
+    // lastRequestObject = {};
+    // XMLHttpRequest.prototype.reallyOpen = XMLHttpRequest.prototype.open;
+    // XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+    //     console.log(method + " : " + url);
+    //     lastRequestObject['method'] = method;
+    //     lastRequestObject['url'] = url;
+    //     this.reallyOpen(method, url, async, user, password);
+    // };
+    // XMLHttpRequest.prototype.reallySend = XMLHttpRequest.prototype.send;
+    // XMLHttpRequest.prototype.send = function(body) {
+    //     if (typeof(JsRequestListener) !== 'undefined') {
+    //         JsRequestListener.record(lastRequestObject.method, lastRequestObject.url, body);
+    //     }
+    //     console.log("body : " + body);
+    //     lastXmlhttpRequestPrototypeMethod = null;
+    //     this.reallySend(body);
+    // };
 </script>
+
 </html>
